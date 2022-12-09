@@ -1,0 +1,16 @@
+app:
+  class:
+    0: 'https://hooks.slack.com/services/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'
+    1: 'https://hooks.slack.com/services/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'
+    2: 'https://hooks.slack.com/services/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'
+    3: 'https://hooks.slack.com/services/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'
+    4: 'https://hooks.slack.com/services/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'
+    5: 'https://hooks.slack.com/services/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'
+  
+  className:
+    0: '부정인 문장'
+    1: '앱 개발팀'
+    2: '서비스 개발팀'
+    3: '서비스 기획팀'
+    4: '콘텐츠 운영팀'
+    5: 'IT 기획팀'
