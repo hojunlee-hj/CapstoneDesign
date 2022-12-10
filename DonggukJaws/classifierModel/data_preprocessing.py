@@ -6,9 +6,11 @@ from konlpy.tag import Okt
 from tqdm import tqdm
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
+import kss
+import pickle
 
 class PreProcessing :
-    def __init__(self, train_dataset, test_dataset) :
+    def __init__(self, train_dataset, test_dataset, predefined = False) :
         self.okt = Okt()
         self.tokenizer = Tokenizer()
         self.stopWords = ['의', '가', '이', '은', '들', '는', '좀', '잘', '걍', '과', '도', '를', '으로', '자', '에', '와', '한', '하다']
@@ -20,7 +22,13 @@ class PreProcessing :
         self.X_train = train_dataset
         self.X_test = test_dataset
         print(len(self.train_dataset), len(self.test_dataset), type(self.train_dataset), type(self.test_dataset))
-        self.makePreProcessor()
+        if not predefined:
+            self.makePreProcessor()
+        else:
+            with open('data/tokenizer/posNegTokenizer.pickle', 'rb') as handle:
+                self.posNegTokenizer = pickle.load(handle)
+            with open('data/tokenizer/ClassTokenizer.pickle', 'rb') as handle:
+                self.classTokenizer = pickle.load(handle)
 
     def makePreProcessor(self):
         self.removeDuplicates()
@@ -130,3 +138,23 @@ class PreProcessing :
 
         return pad_new
 
+    def preprocessingSentence(self, input_sentence, type = "PosNeg"):
+        input_sentence = re.sub(r'[^ㄱ-ㅎㅏ-ㅣ가-힣 ]', '', input_sentence)
+        new_sentence = self.okt.morphs(input_sentence, stem=True)  # 토큰화
+        new_sentence = [word for word in new_sentence if not word in self.stopWords]  # 불용어 제거
+        if type == "PosNeg":
+            encoded = self.posNegTokenizer.texts_to_sequences([new_sentence])  # 정수 인코딩
+        else:
+            encoded = self.classTokenizer.texts_to_sequences([new_sentence])  # 정수 인코딩
+        pad_new = pad_sequences(encoded, maxlen=self.max_len)  # 패딩
+
+        return pad_new
+
+
+    def paragraphToSentences(self, input_paragraph):
+        print("Input Raw Review : ", input_paragraph)
+        sentences = kss.split_sentences(input_paragraph)
+        for sentence in sentences:
+            print(sentence)
+
+        return sentences
