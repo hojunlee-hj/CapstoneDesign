@@ -14,13 +14,14 @@ def board():
     return "그냥 보드"
 
 # index.html로 라우트
-@app.route('/')
+@app.route('/', method='GET')
 def main():
     return render_template('index.html')
 
 # result.html로 라우트
-@app.route('/result')
+@app.route('/result', method = 'GET')
 def resultPage():
+    reviews = ""
     return render_template('result.html')
 
 # URL 에 매개변수를 받아 진행하는 방식입니다.
