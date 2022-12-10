@@ -56,32 +56,28 @@ def DBTest():
     user = current_app.database.execute(text("""
         SELECT 
             id,
-            name,
-            email,
-            profile
-        FROM users
-        WHERE id = :user_id
+            username
+        FROM review
+        WHERE seq = :seq
     """), {
-        'user_id' : 1
+        'seq' : 1
     }).fetchone()
 
     return {
         'id'      : user['id'],
-        'name'    : user['name'],
-        'email'   : user['email'],
-        'profile' : user['profile']
+        'username'    : user['username'],
     } if user else None
     
 
 def sendToSlack(classNum, originText):
-    print(classNum)
-    print(originText)
-    print(slackPath.getPath(classNum))
+    # print(classNum)
+    # print(originText)
+    # print(slackPath.getPath(classNum))
     path = slackPath.getPath(classNum)
     param1 = makeJsonString(classNum, originText)
     # json_object = json.loads(param1)
     headers = {'Content-Type': 'application/json; charset=utf-8'}
-    print(param1)
+    # print(param1)
     response = requests.post(url=path, headers=headers, json=param1)
     print(response.content)
 
@@ -145,5 +141,7 @@ app.config.from_pyfile("config.py")
 # database = create_engine(app.config['DB_URL'], encoding = 'utf-8', max_overflow = 0)
 # app.database = database
 
+# result = database.engine.execute('data.sql')
+# print(result)
 
 app.run(host="localhost",port=8080)
