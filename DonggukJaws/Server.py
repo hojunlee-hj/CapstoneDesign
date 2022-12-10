@@ -11,6 +11,7 @@ dataLoader = DataSet('data/ratings_train.txt', 'data/ratings_test.txt', 'data/po
 preprocessor = PreProcessing(dataLoader.train, dataLoader.test, True)
 
 app = Flask(__name__)
+
 # api = Api(app)
 #
 # api.add_namespace(ClassifierController, '/nlpmodel')
@@ -54,7 +55,7 @@ class ModelService :
 
 @app.route('/')
 def hello_world():
-    return render_template('input.html')
+    return render_template('index.html')
 
 
 @app.route('/predictPosNeg', methods=['POST'])
@@ -66,8 +67,11 @@ def predict():
 
 @app.route('/predictReview', methods=['POST'])
 def predictReview():
-    input_paragraph = request.form['input']
+    input_paragraph = request.form['review']
     print("Input Paragraph : ", input_paragraph)
+    posNegResult = list()
+    classClassifierResult = list()
+
     model_service = ModelService()
     ## 1. 문단을 문장으로
     sentences = preprocessor.paragraphToSentences(input_paragraph)
@@ -84,10 +88,19 @@ def predictReview():
             softmax, output = model_service.predictClass(classInputSentence)
             ## 6. [output -> pos / neg , softmax output value, model inference Class Info]
             print(softmax, output)
+            posNegResult.append('부정')
+            classClassifierResult.append(getClassName(output))
         else:
-            print("부정인 문장")
-    return "helloWorld!"
+            posNegResult.append('긍정')
+            classClassifierResult.append('긍정')
 
+    return render_template('result.html', content=input_paragraph, splitArr=sentences, sentimentArr=posNegResult,
+                           classifiedArr=classClassifierResult)
+
+def getClassName(input_class) :
+    classifiedArr = ['단순 부정', '앱 개발팀', '서비스 개발팀', '서비스 기획팀',
+                     '콘텐츠 운영팀', 'IT 기획팀']
+    return classifiedArr[input_class]
 
     '''
     1. 문장 나눈 결과
@@ -96,4 +109,4 @@ def predictReview():
     '''
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host="localhost", port=8080)
