@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, current_app
+from flask import Flask, request, jsonify, current_app, render_template
 from flask.json import JSONEncoder
 from sqlalchemy import create_engine, text
 import yaml
@@ -6,13 +6,27 @@ from SlackPath import SlackPath
 import requests, json
 
 app = Flask(__name__)
-
 slackPath = SlackPath()
 
 # 일반적인 라우트 방식입니다.
 @app.route('/board')
 def board():
     return "그냥 보드"
+
+# index.html로 라우트
+@app.route('/', methods=['GET'])
+def main():
+    return render_template('index.html')
+
+# result.html로 라우트
+@app.route('/result', methods=['POST'])
+def resultPage():
+    reviewContent = request.form['review']
+    splitArr = [r for r in reviewContent.split("\n")]
+    sentimentArr = ['긍정', '부정', '부정', '부정', '부정']
+    classifiedArr = ['단순 부정', '앱 개발팀', '서비스 개발팀', '서비스 기획팀',
+                    '콘텐츠 운영팀', 'IT 기획팀']
+    return render_template('result.html', content=reviewContent, splitArr=splitArr, sentimentArr=sentimentArr, classifiedArr=classifiedArr)
 
 # URL 에 매개변수를 받아 진행하는 방식입니다.
 @app.route('/board/<article_idx>')
@@ -42,32 +56,28 @@ def DBTest():
     user = current_app.database.execute(text("""
         SELECT 
             id,
-            name,
-            email,
-            profile
-        FROM users
-        WHERE id = :user_id
+            username
+        FROM review
+        WHERE seq = :seq
     """), {
-        'user_id' : 1
+        'seq' : 1
     }).fetchone()
 
     return {
         'id'      : user['id'],
-        'name'    : user['name'],
-        'email'   : user['email'],
-        'profile' : user['profile']
+        'username'    : user['username'],
     } if user else None
     
 
 def sendToSlack(classNum, originText):
-    print(classNum)
-    print(originText)
-    print(slackPath.getPath(classNum))
+    # print(classNum)
+    # print(originText)
+    # print(slackPath.getPath(classNum))
     path = slackPath.getPath(classNum)
     param1 = makeJsonString(classNum, originText)
     # json_object = json.loads(param1)
     headers = {'Content-Type': 'application/json; charset=utf-8'}
-    print(param1)
+    # print(param1)
     response = requests.post(url=path, headers=headers, json=param1)
     print(response.content)
 
@@ -128,9 +138,10 @@ def makeJsonString(classNum, originText):
 
 app.config.from_pyfile("config.py")
 
-database = create_engine(app.config['DB_URL'], encoding = 'utf-8', max_overflow = 0)
-app.database = database
+# database = create_engine(app.config['DB_URL'], encoding = 'utf-8', max_overflow = 0)
+# app.database = database
 
+# result = database.engine.execute('data.sql')
+# print(result)
 
-app.run(host="localhost",port=5000)
-
+app.run(host="localhost",port=8080)
