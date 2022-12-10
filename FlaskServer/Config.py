@@ -8,7 +8,8 @@ db = {
     # 관계형 데이터베이스는 주로 3306 포트를 통해 연결됨
     'port': 3306,
     # 실제 사용할 데이터베이스 이름
-    'database': 'capstone'
+    'database': 'capstone',
+    'charset' : 'utf8'
 }
 
 DB_URL = f"mysql+mysqlconnector://{db['user']}:{db['password']}@{db['host']}:{db['port']}/{db['database']}?charset=utf8"
