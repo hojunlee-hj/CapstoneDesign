@@ -14,15 +14,19 @@ def board():
     return "그냥 보드"
 
 # index.html로 라우트
-@app.route('/', method='GET')
+@app.route('/', methods=['GET'])
 def main():
     return render_template('index.html')
 
 # result.html로 라우트
-@app.route('/result', method = 'GET')
+@app.route('/result', methods=['POST'])
 def resultPage():
-    reviews = ""
-    return render_template('result.html')
+    reviewContent = request.form['review']
+    splitArr = [r for r in reviewContent.split("\n")]
+    sentimentArr = ['긍정', '부정', '부정', '부정', '부정']
+    classifiedArr = ['단순 부정', '앱 개발팀', '서비스 개발팀', '서비스 기획팀',
+                    '콘텐츠 운영팀', 'IT 기획팀']
+    return render_template('result.html', content=reviewContent, splitArr=splitArr, sentimentArr=sentimentArr, classifiedArr=classifiedArr)
 
 # URL 에 매개변수를 받아 진행하는 방식입니다.
 @app.route('/board/<article_idx>')

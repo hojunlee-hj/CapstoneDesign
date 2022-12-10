@@ -17,31 +17,36 @@
             <!-- one -->
             <div class="pricing-plan">
               <h4 class="pricing-header">데이터 수집 결과</h4>
-              <textarea class="pricing-features" cols="20" rows="10" placeholder="데이터 수집 결과">{}</textarea>
+              <ul class="pricing-features">
+                <li class="pricing-features-item">{{content}}</li>
+              </ul>
             </div>
             <!-- two -->
             <div class="pricing-plan">
               <h4 class="pricing-header">문장 단위 분리 결과</h4>
-              <ul class="pricing-features">
-                <li class="pricing-features-item">Never sleeps</li>
-                <li class="pricing-features-item">Multiple workers for more powerful apps</li>
-              </ul>
+              {% for splitData in splitArr %}
+                <ul class="pricing-features">
+                  <li class="pricing-features-item">{{splitData}}</li>
+                </ul>
+              {% endfor %}
             </div>
             <!-- three -->
             <div class="pricing-plan">
               <h4 class="pricing-header">긍/부정 판별 결과</h4>
-              <ul class="pricing-features">
-                <li class="pricing-features-item">Dedicated</li>
-                <li class="pricing-features-item">Simple horizontal scalability</li>
-              </ul>
+              {% for sentimentData in sentimentArr %}
+                <ul class="pricing-features">
+                  <li class="pricing-features-item">{{sentimentData}}</li>
+                </ul>
+              {% endfor %}
             </div>
             <!-- four -->
             <div class="pricing-plan">
                 <h4 class="pricing-header">클래스 분류 결과</h4>
-                <ul class="pricing-features">
-                  <li class="pricing-features-item">Dedicated</li>
-                  <li class="pricing-features-item">Simple horizontal scalability</li>
-                </ul>
+                {% for classifiedData in classifiedArr %}
+                  <ul class="pricing-features">
+                    <li class="pricing-features-item">{{classifiedData}}</li>
+                  </ul>
+                {% endfor %}
               </div>
           </div>
       </div>

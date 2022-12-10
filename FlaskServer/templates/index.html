@@ -10,22 +10,16 @@
 <body>
     <!-- -->
     <div class="container">
-        <form method="get" action="javascript: void(0);" id="login-form" class="login-form" autocomplete="off" role="main">
+        <form method="post" action="/result" id="login-form" class="login-form" autocomplete="off" role="main">
             <div>
-                    <h2 style="text-align: center;">지니 뮤직 - genie</h2>
+                <h2 style="text-align: center;">지니 뮤직 - genie</h2>
                 <div style="display: flex; justify-content: center; align-items: center">
                     <img src="https://play-lh.googleusercontent.com/gSjYDowrYi_BIdXKIsxhc4Y3Zj5zGA3os_SCm8cqWWCrXQYejcmser-UOEM-PnCGRgk=w480-h960-rw" style="width:100px; height:100px" />
                 </div>
             </div>
-            
             <div>
               <label class="label-email">
-                <input class="text" name="title" placeholder="제목" tabindex="1" required />
-              </label>
-            </div>
-            <div>
-              <label class="label-email">
-                <textarea class="text" name="review" cols="20" rows="10" placeholder="리뷰(선택사항)" required></textarea>
+                <textarea class="text" name="review" cols="20" rows="10" placeholder="리뷰 내용" required></textarea>
               </label>
             </div>
             <input type="submit" value="리뷰 제출" />
