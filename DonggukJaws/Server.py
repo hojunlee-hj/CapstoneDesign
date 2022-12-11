@@ -5,9 +5,9 @@ from classifierModel.data_preprocessing import PreProcessing
 from classifierModel.data_loader import DataSet
 from tensorflow.keras.models import load_model
 import numpy as np
-from DonggukJaws.service.slackService import sendToSlack
+from DonggukJaws.service.slackService import sendToSlack, processTag
 import operator
-
+from konlpy.tag import Okt, Kkma
 
 
 class ModelService :
@@ -50,6 +50,7 @@ class ModelService :
 dataLoader = DataSet('data/ratings_train.txt', 'data/ratings_test.txt', 'data/pos_neg_genie_review_dataset.txt')
 preprocessor = PreProcessing(dataLoader.train, dataLoader.test, True)
 model_service = ModelService()
+okt = Okt()
 
 app = Flask(__name__)
 
@@ -72,10 +73,12 @@ def predict():
 @app.route('/predictReview', methods=['POST'])
 def predictReview():
     global model_service
+    global okt
     input_paragraph = request.form['review']
     print("Input Paragraph : ", input_paragraph)
     posNegResult = list()
     classClassifierResult = list()
+    classOutputs = list()
 
     average_softmax = [0 for i in range(6)]
     maxSoftmaxByClass = [ dict() for i in range(6)]
@@ -104,9 +107,11 @@ def predictReview():
                 maxSoftmaxByClass[output][idx] = softmax[0][output]
             posNegResult.append('부정')
             classClassifierResult.append(getClassName(output))
+            classOutputs.append(output)
         else:
             posNegResult.append('긍정')
             classClassifierResult.append('긍정')
+            classOutputs.append(-1)
 
     ## Logic
     average_softmax = [x / negative for x in average_softmax]
@@ -118,19 +123,25 @@ def predictReview():
     for classNum in range(1, 6):
         if average_softmax[classNum] >= threshold:
         # slack api
+            techTags = list()
             techType = ['X', '앱 클라이언트 기능 문제', '서버 기능 문제', '사용자 개선 요구 사항', '음원 관련 이슈', '네트워크 이슈']
 
         # 기능 태그
         # 해당 클래스 문장 -> 탐색 키워드 있으면 출력
-            for result in classClassifierResult:
+            classSentences = list()
+            for idx, result in enumerate(classOutputs):
                 if result == classNum:
-                    print("키워드 탐색")
+                    classSentences.append(sentences[idx])
 
-
+            print(" ".join(classSentences))
+            techTags = processTag(classNum, " ".join(classSentences), okt)
+            print(techTags)
+            techTagsString = "#" + "# ".join(techTags)
+            print(techTagsString)
         # 주요 이슈 -> 해당 클래스 중 가장 확률이 높은 문장
             importantIssueSentence = sentences[max(maxSoftmaxByClass[classNum].items(), key=operator.itemgetter(1))[0]]
             print(importantIssueSentence)
-            sendToSlack(classNum, input_paragraph, techType[classNum], importantIssueSentence)
+            sendToSlack(classNum, input_paragraph, techType[classNum], importantIssueSentence, techTagsString)
 
 
 
