@@ -5,16 +5,10 @@ from classifierModel.data_preprocessing import PreProcessing
 from classifierModel.data_loader import DataSet
 from tensorflow.keras.models import load_model
 import numpy as np
+from DonggukJaws.service.slackService import sendToSlack
+import operator
 
 
-dataLoader = DataSet('data/ratings_train.txt', 'data/ratings_test.txt', 'data/pos_neg_genie_review_dataset.txt')
-preprocessor = PreProcessing(dataLoader.train, dataLoader.test, True)
-
-app = Flask(__name__)
-
-# api = Api(app)
-#
-# api.add_namespace(ClassifierController, '/nlpmodel')
 
 class ModelService :
     # Todo Model Singleton
@@ -53,6 +47,16 @@ class ModelService :
         output = np.argmax(softmax)
         return softmax, output
 
+dataLoader = DataSet('data/ratings_train.txt', 'data/ratings_test.txt', 'data/pos_neg_genie_review_dataset.txt')
+preprocessor = PreProcessing(dataLoader.train, dataLoader.test, True)
+model_service = ModelService()
+
+app = Flask(__name__)
+
+# api = Api(app)
+#
+# api.add_namespace(ClassifierController, '/nlpmodel')
+
 @app.route('/')
 def hello_world():
     return render_template('index.html')
@@ -67,16 +71,22 @@ def predict():
 
 @app.route('/predictReview', methods=['POST'])
 def predictReview():
+    global model_service
     input_paragraph = request.form['review']
     print("Input Paragraph : ", input_paragraph)
     posNegResult = list()
     classClassifierResult = list()
 
-    model_service = ModelService()
+    average_softmax = [0 for i in range(6)]
+    maxSoftmaxByClass = [ dict() for i in range(6)]
+
+    negative = 0
+    print(average_softmax)
+
     ## 1. 문단을 문장으로
     sentences = preprocessor.paragraphToSentences(input_paragraph)
-    ## 2. for sentence in paragraph
 
+    ## 2. for sentence in paragraph
     for idx, sentence in enumerate(sentences) :
         print(f'{idx} sentence : {sentence}')
         ## 3. text preprocessing
@@ -88,11 +98,41 @@ def predictReview():
             softmax, output = model_service.predictClass(classInputSentence)
             ## 6. [output -> pos / neg , softmax output value, model inference Class Info]
             print(softmax, output)
+            if output != 0:
+                negative += 1
+                average_softmax = [x + y for x, y in zip(softmax[0], average_softmax)]
+                maxSoftmaxByClass[output][idx] = softmax[0][output]
             posNegResult.append('부정')
             classClassifierResult.append(getClassName(output))
         else:
             posNegResult.append('긍정')
             classClassifierResult.append('긍정')
+
+    ## Logic
+    average_softmax = [x / negative for x in average_softmax]
+    print(average_softmax)
+    print(np.argmax(average_softmax[1:]) + 1)
+
+    final_class = np.argmax(average_softmax[1:]) + 1
+    threshold = 0.4
+    for classNum in range(1, 6):
+        if average_softmax[classNum] >= threshold:
+        # slack api
+            techType = ['X', '앱 클라이언트 기능 문제', '서버 기능 문제', '사용자 개선 요구 사항', '음원 관련 이슈', '네트워크 이슈']
+
+        # 기능 태그
+        # 해당 클래스 문장 -> 탐색 키워드 있으면 출력
+            for result in classClassifierResult:
+                if result == classNum:
+                    print("키워드 탐색")
+
+
+        # 주요 이슈 -> 해당 클래스 중 가장 확률이 높은 문장
+            importantIssueSentence = sentences[max(maxSoftmaxByClass[classNum].items(), key=operator.itemgetter(1))[0]]
+            print(importantIssueSentence)
+            sendToSlack(classNum, input_paragraph, techType[classNum], importantIssueSentence)
+
+
 
     return render_template('result.html', content=input_paragraph, splitArr=sentences, sentimentArr=posNegResult,
                            classifiedArr=classClassifierResult)
@@ -107,6 +147,8 @@ def getClassName(input_class) :
     2. 긍정 / 부정
     3. 문장별 최종 클래스 결과
     '''
+
+
 
 if __name__ == '__main__':
     app.run(host="localhost", port=8080)

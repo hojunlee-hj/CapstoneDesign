@@ -1,9 +1,7 @@
 from flask import Flask, request, jsonify, current_app, render_template
-from flask.json import JSONEncoder
-from sqlalchemy import create_engine, text
-import yaml
-from SlackPath import SlackPath
-import requests, json
+from sqlalchemy import text
+from DonggukJaws.util.slack.SlackPath import SlackPath
+import requests
 
 app = Flask(__name__)
 slackPath = SlackPath()

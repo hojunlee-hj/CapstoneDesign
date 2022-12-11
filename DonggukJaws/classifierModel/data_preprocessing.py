@@ -27,8 +27,10 @@ class PreProcessing :
         else:
             with open('data/tokenizer/posNegTokenizer.pickle', 'rb') as handle:
                 self.posNegTokenizer = pickle.load(handle)
+            self.posNegTokenizer.texts_to_sequences(["테스트 중 입니다."])
             with open('data/tokenizer/ClassTokenizer.pickle', 'rb') as handle:
                 self.classTokenizer = pickle.load(handle)
+            self.classTokenizer.texts_to_sequences(["앱 버그 테스트 중 입니다"])
 
     def makePreProcessor(self):
         self.removeDuplicates()
