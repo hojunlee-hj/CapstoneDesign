@@ -119,7 +119,7 @@ def predictReview():
     print(np.argmax(average_softmax[1:]) + 1)
 
     final_class = np.argmax(average_softmax[1:]) + 1
-    threshold = 0.4
+    threshold = 0.35
     for classNum in range(1, 6):
         if average_softmax[classNum] >= threshold:
         # slack api
@@ -136,7 +136,7 @@ def predictReview():
             print(" ".join(classSentences))
             techTags = processTag(classNum, " ".join(classSentences), okt)
             print(techTags)
-            techTagsString = "#" + "# ".join(techTags)
+            techTagsString = "`#" + "` `#".join(techTags)
             print(techTagsString)
         # 주요 이슈 -> 해당 클래스 중 가장 확률이 높은 문장
             importantIssueSentence = sentences[max(maxSoftmaxByClass[classNum].items(), key=operator.itemgetter(1))[0]]

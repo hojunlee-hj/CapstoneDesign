@@ -43,7 +43,7 @@ def makeJsonString(classNum, originText, techIssue, issueSentence, techTags):
     		"type": "section",
     		"text": {
     			"type": "mrkdwn",
-    			"text": "*기능 태그* : {}".format(techTags)
+    			"text": "*기능 태그* : {}`".format(techTags)
     		}
     	},
         {
